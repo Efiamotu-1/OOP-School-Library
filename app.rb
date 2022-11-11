@@ -13,7 +13,7 @@ class App
   def initialize
     @people = populate_person
     @book = populate_books
-    @rentals = populate_rentals(@people, @books)
+    @rentals = populate_rentals(@people, @book)
   end
 
   def run
