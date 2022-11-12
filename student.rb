@@ -6,6 +6,8 @@ class Student < Person
     @classroom = classroom
   end
 
+  attr_reader :classroom, :parent_permission
+
   def classroom=(classroom)
     @classroom = classroom
     classroom.students.push(self) unless classroom.students.include?(self)
