@@ -2,6 +2,7 @@ require_relative './student'
 require_relative './teacher'
 require_relative './book'
 require_relative './rental'
+require_relative './menu'
 require 'date'
 
 class App
@@ -37,32 +38,33 @@ class App
   end
 
   def option(input)
+    create = Creates.new(@people, @book, @rentals)
+    list = Lists.new(@people, @book, @rentals)
     case input
     when '1'
-      list_books
+      list.list_books
     when '2'
-      list_people
+      list.list_people
     when '3'
-      create_person
+      @people.push(create.create_person)
     when '4'
-      create_book
+      @book.push(create.create_book)
     when '5'
-      create_rental
+      @rentals.push(create.create_rental)
     when '6'
-      list_rentals
+      list.list_rentals
     else
       'Enter digit from 1 to 7'
     end
   end
+end
 
-  def list_people
-    if @people.empty?
-      puts 'No people found!'
-      back_to_menu
-    end
-    @people.each_with_index do |person, i|
-      puts "#{i}) [#{person.class}] Name: #{person.name}, Age: #{person.age}, ID: #{person.id}"
-    end
+class Creates
+  include BackToMenu
+  def initialize(people = [], book = [], rental = [])
+    @people = people
+    @book = book
+    @rental = rental
   end
 
   def create_book
@@ -70,51 +72,9 @@ class App
     title = gets.chomp
     print 'Author: '
     author = gets.chomp
-
     book = Book.new(title, author)
-    @book.push(book)
     puts 'Book Successfully created'
-  end
-
-  def list_books
-    if @books.empty?
-      puts 'No Book found!'
-      back_to_menu
-    end
-
-    @book.each_with_index do |text, i|
-      puts "#{i}) Title: #{text.title}, Author: #{text.author} "
-    end
-  end
-
-  def create_rental
-    puts 'Select a book from the following list by number (not id)'
-    list_books
-    book_index = gets.chomp.to_i
-    book = @book[book_index]
-
-    puts 'Select a person from the following list by number (not id)'
-    list_people
-    person_index = gets.chomp.to_i
-    person = @people[person_index]
-    print 'Date :'
-    date_value = gets.chomp
-    date = convert_date(date_value)
-
-    rental = Rental.new(date, book, person)
-    puts rental
-    @rentals.push(rental)
-    puts 'Rental created successfully'
-  end
-
-  def list_rentals
-    puts 'Select id of any person'
-    @people.each { |i| puts "id: #{i.id}, Person: #{i.name}" }
-    print 'Person id: '
-    person_id = gets.chomp.to_i
-    @rentals.each do |i|
-      puts "Date: #{i.date}, Book: '#{i.book.title}' by #{i.book.author}" if i.person.id.to_i == person_id
-    end
+    book
   end
 
   def create_person
@@ -131,15 +91,25 @@ class App
     end
   end
 
-  def convert_date(str)
-    Date.parse(str)
-  end
+  def create_rental
+    puts 'Select a book from the following list by number (not id)'
+    list = Lists.new(@people, @book, @rentals)
+    list.list_books
+    book_index = gets.chomp.to_i
+    book = @book[book_index]
 
-  def back_to_menu
-    puts ''
-    print 'Press Enter to go back to menu '
-    gets.chomp
-    puts ''
+    puts 'Select a person from the following list by number (not id)'
+    list.list_people
+    person_index = gets.chomp.to_i
+    person = @people[person_index]
+    print 'Date :'
+    date_value = gets.chomp
+    convert_new_date = DateConverter.new
+    date = convert_new_date.convert_date(date_value)
+
+    rental = Rental.new(date, book, person)
+    puts 'Rental created successfully'
+    rental
   end
 
   private
@@ -153,9 +123,9 @@ class App
     permission = gets.chomp.downcase == 'y'
 
     student = Student.new(nil, age, name, permission)
-    @people.push(student)
     puts 'Person created successfully'
     back_to_menu
+    student
   end
 
   def create_teacher
@@ -167,8 +137,55 @@ class App
     specialization = gets.chomp.downcase
 
     teacher = Teacher.new(age, specialization, name)
-    @people.push(teacher)
     puts 'Person created successfully'
     back_to_menu
+    teacher
+  end
+end
+
+class Lists
+  include BackToMenu
+
+  def initialize(people = [], book = [], rental = [])
+    @people = people
+    @book = book
+    @rentals = rental
+  end
+
+  def list_people
+    if @people.empty?
+      puts 'No people found!'
+      back_to_menu
+    end
+    @people.each_with_index do |person, i|
+      puts "#{i}) [#{person.class}] Name: #{person.name}, Age: #{person.age}, ID: #{person.id}"
+    end
+  end
+
+  def list_books
+    if @book.empty?
+      puts 'No Book found!'
+      back_to_menu
+    end
+
+    @book.each_with_index do |text, i|
+      puts "#{i}) Title: #{text.title}, Author: #{text.author} "
+    end
+  end
+
+  def list_rentals
+    puts 'Select id of any person'
+    @people.each { |i| puts "id: #{i.id}, Person: #{i.name}" }
+    print 'Person id: '
+    person_id = gets.chomp.to_i
+    @rentals.each do |i|
+      puts "Date: #{i.date}, Book: '#{i.book.title}' by #{i.book.author}" if i.person.id.to_i == person_id
+    end
+  end
+end
+
+class DateConverter
+  def convert_date(str)
+    Date.parse(str)
   end
 end

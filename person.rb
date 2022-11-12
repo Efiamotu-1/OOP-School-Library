@@ -35,10 +35,3 @@ class Person < Nameable
     Rental.new(date, self, book)
   end
 end
-
-person = Person.new(22, 'maximilianus')
-puts person.correct_name
-capitalized_person = CapitalizeDecorator.new(person)
-puts capitalized_person.correct_name
-capitalized_trimmedperson = TrimmerDecorator.new(capitalized_person)
-puts capitalized_trimmedperson.correct_name
